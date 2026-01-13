@@ -1,0 +1,9 @@
+﻿{
+    "answer":  "1. 수확 전 준비 단계는 다음과 같다.\n2. 작업 단계:\n   - 장갑과 장화를 반드시 착용한다.\n   - 수확 도구(가위, 칼)의 상태를 확인한다.\n3. 안전 또는 주의사항:\n   - 비가 온 날에는 미끄럼 사고에 주의한다.",
+    "sources":  [
+                    {
+                        "source":  "C:\\Users\\takensoft\\Desktop\\farm-rag\\data\\farm_1\\sample.txt",
+                        "page":  null
+                    }
+                ]
+}
