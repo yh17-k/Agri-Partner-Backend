@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Text, Boolean
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 from database import Base
 
@@ -7,29 +7,30 @@ class User(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String, unique=True, index=True)
-    password = Column(String)
+    hashed_password = Column(String)
     name = Column(String)
-    role = Column(String)  # 'owner' or 'worker'
+    role = Column(String) # "owner", "worker", "admin"
     phone = Column(String)
     language = Column(String, default="ko")
     
+    # 선택 정보
     email = Column(String, nullable=True)
     business_number = Column(String, nullable=True)
     visa = Column(String, nullable=True)
     nationality = Column(String, nullable=True)
+    
+    # ★ 프로필 사진 (COM-003)
+    profile_image = Column(String, nullable=True)
+    
+    # ★ 약관 동의
     is_agreed = Column(Boolean, default=False)
-    farm_id = Column(Integer, ForeignKey("farms.id"), nullable=True)
-    affiliated_farm_id = Column(Integer, nullable=True) 
+    
+    # ★ [핵심] 근로자가 소속될 농장 ID
+    affiliated_farm_id = Column(Integer, ForeignKey("farms.id"), nullable=True)
 
-    # -------------------------------------------------------
-    # [관계 설정 1: 사장님] 내가 소유한 농장들
-    # (Farm 테이블의 owner_id를 바라봄)
+    # 관계 설정
     owned_farms = relationship("Farm", back_populates="owner", foreign_keys="Farm.owner_id")
-
-    # [관계 설정 2: 직원] 내가 일하는 농장
-    # (내 테이블의 farm_id를 바라봄)
-    working_farm = relationship("Farm", back_populates="workers", foreign_keys=[farm_id])
-    # -------------------------------------------------------
+    working_farm = relationship("Farm", back_populates="workers", foreign_keys=[affiliated_farm_id])
 
 
 class Farm(Base):
@@ -37,40 +38,36 @@ class Farm(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, index=True)
-    address = Column(String)
     
-    # [사장님용] 이 농장의 주인 ID
-    owner_id = Column(Integer, ForeignKey("users.id"))
+    # ★ [핵심] 작물 및 규모 (FRM-001)
+    crop = Column(String)  
+    size = Column(String, nullable=True)
+    
+    address = Column(String)
+    farm_image = Column(String, nullable=True)
     
     latitude = Column(String, nullable=True)
     longitude = Column(String, nullable=True)
 
-    # -------------------------------------------------------
-    # [관계 설정 1: 사장님] 이 농장의 주인
+    owner_id = Column(Integer, ForeignKey("users.id"))
+    
     owner = relationship("User", back_populates="owned_farms", foreign_keys=[owner_id])
-    
-    # [관계 설정 2: 직원] 이 농장에서 일하는 직원들
-    workers = relationship("User", back_populates="working_farm", foreign_keys="User.farm_id")
-    
-    # [관계 설정 3] 상세 설정 (와이파이 등)
+    workers = relationship("User", back_populates="working_farm", foreign_keys="User.affiliated_farm_id")
     setting = relationship("FarmSetting", uselist=False, back_populates="farm")
-    # -------------------------------------------------------
 
 
 class FarmSetting(Base):
     __tablename__ = "farm_settings"
 
     id = Column(Integer, primary_key=True, index=True)
-    farm_id = Column(Integer, ForeignKey("farms.id"), unique=True)
+    farm_id = Column(Integer, ForeignKey("farms.id"))
     
     wifi_id = Column(String, nullable=True)
     wifi_pw = Column(String, nullable=True)
-    
     breakfast_time = Column(String, nullable=True)
     lunch_time = Column(String, nullable=True)
     dinner_time = Column(String, nullable=True)
-    
-    dorm_rules = Column(Text, nullable=True)
+    dorm_rules = Column(String, nullable=True)
     emergency_contact = Column(String, nullable=True)
 
     farm = relationship("Farm", back_populates="setting")

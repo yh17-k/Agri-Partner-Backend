@@ -1,39 +1,42 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import List, Optional
 
-# --- 유저 (User) 관련 ---
-class UserCreate(BaseModel):
+# --- 토큰 ---
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+# --- 유저 (공통 부분) ---
+# 비밀번호 빼고 나머지 다 들어감
+class UserBase(BaseModel):
     username: str
-    password: str
     name: str
-    role: str
+    role: str 
     phone: str
     language: str = "ko"
+    
     email: Optional[str] = None
     business_number: Optional[str] = None
     visa: Optional[str] = None
     nationality: Optional[str] = None
-    affiliated_farm_id: Optional[int] = None
+    affiliated_farm_id: Optional[int] = None 
     is_agreed: bool = False
 
-class UserResponse(UserCreate):
+# --- 유저 생성용 (입력) ---
+# ★ 비밀번호는 가입할 때만 필요함!
+class UserCreate(UserBase):
+    password: str
+
+# --- 유저 응답용 (출력) ---
+# ★ 비밀번호 없음! (보안 통과, 에러 해결)
+class UserResponse(UserBase):
     id: int
+    # farm_id는 필요하면 계산해서 넣거나, affiliated_farm_id로 대체
+    
     class Config:
         from_attributes = True
 
-# --- 농장 (Farm) 관련 ---
-class FarmCreate(BaseModel):
-    name: str
-    address: str
-    latitude: Optional[str] = None
-    longitude: Optional[str] = None
-
-class FarmResponse(FarmCreate):
-    id: int
-    class Config:
-        from_attributes = True
-
-# --- 농장 상세 설정 (Farm Settings) ---
+# --- 농장 설정 ---
 class FarmSettingCreate(BaseModel):
     wifi_id: Optional[str] = None
     wifi_pw: Optional[str] = None
@@ -49,7 +52,18 @@ class FarmSettingResponse(FarmSettingCreate):
     class Config:
         from_attributes = True
 
-# --- 토큰 (Token) ---
-class Token(BaseModel):
-    access_token: str
-    token_type: str
+# --- 농장 ---
+class FarmCreate(BaseModel):
+    name: str
+    crop: str
+    size: Optional[str] = None
+    address: str
+    latitude: Optional[str] = None
+    longitude: Optional[str] = None
+
+class FarmResponse(FarmCreate):
+    id: int
+    owner_id: int
+    
+    class Config:
+        from_attributes = True
