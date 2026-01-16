@@ -1,3 +1,4 @@
+from datetime import date, datetime
 from pydantic import BaseModel
 from typing import List, Optional
 
@@ -67,3 +68,34 @@ class FarmResponse(FarmCreate):
     
     class Config:
         from_attributes = True
+
+class AttendanceCreate(BaseModel):
+    latitude: float
+    longitude: float
+
+class AttendanceResponse(BaseModel):
+    id: int
+    date: date
+    start_time: datetime
+    end_time: datetime | None = None
+    status: str  # "출근" or "퇴근"
+
+    class Config:
+        from_attributes = True
+
+class UserUpdate(BaseModel):
+    name: Optional[str] = None
+    phone: Optional[str] = None
+    # 나중에 사진 URL도 넣고 싶으면 여기에 profile_image: Optional[str] = None 추가
+
+class UserCreate(BaseModel):
+    username: str
+    password: str
+    name: str
+    role: str
+    phone: Optional[str] = None
+    
+    # ★ [COM-006] 가입 시 받을 약관 동의 데이터 추가
+    agreed_terms: bool
+    agreed_privacy: bool
+    agreed_location: bool
